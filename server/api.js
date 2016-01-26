@@ -172,4 +172,66 @@ if (Meteor.isServer) {
       };
     }
   });
+
+
+  Api.addRoute('recurring/:id',{},{
+    delete: function() {
+      if(!this.urlParams.id) {
+        return {
+          statusCode: 404,
+          body: {status: 'fail', message: 'Recurring id not set'}
+        };
+      }
+      var recurring = Recurring.findOne(this.urlParams.id);
+      if(!recurring) {
+        return {
+          statusCode: 404,
+          body: {status: 'fail', message: 'Recurring not found'}
+        };
+      }
+      Recurring.remove({_id: this.urlParams.id});
+      return {
+        statusCode: 200,
+        body: {status: 'success', message: 'Recurring removed'}
+      };
+    },
+    patch: function() {
+      if(!this.urlParams.id) {
+        return {
+          statusCode: 404,
+          body: {status: 'fail', message: 'Recurring id missing'}
+        };
+      }
+      var recurring = Categories.findOne(this.urlParams.id);
+      if(!recurring) {
+        return {
+          statusCode: 404,
+          body: {status: 'fail', message: 'Recurring not found'}
+        };
+      }
+      Recurring.update({_id: this.urlParams.id}, {$set: this.bodyParams});
+      return Recurring.findOne(this.urlParams.id);
+    }
+  });
+  Api.addRoute('recurring', {}, {
+    get: function () {
+      var selector = {};
+      if(this.queryParams.type && this.queryParams.type != "all") {
+        selector.type = this.queryParams.type;
+      }
+      var recurring = Recurring.find(selector).fetch();
+      if(recurring.length) {
+        return recurring;
+      } else {
+        return {
+          statusCode: 404,
+          body: {status: 'fail', message: 'Recurring not found'}
+        };
+      }
+    },
+    put: function() {
+      var id = Recurring.insert(this.bodyParams);
+      return Recurring.findOne(id);
+    }
+  });
 }
