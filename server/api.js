@@ -93,8 +93,11 @@ if (Meteor.isServer) {
       if(this.queryParams.lastMonths) {
           var compareDate = moment();
           compareDate.dates(1);
+          compareDate.hour(0);
+          compareDate.minute(0);
+          compareDate.second(0);
           compareDate.subtract(parseInt(this.queryParams.lastMonths), 'month');
-          selector.date = {'$gte': compareDate.toString()};
+          selector.date = {'$gte': compareDate.format("DD-MM-YYYY")};
       }
       if(this.queryParams.byCategory) {
         selector.catId = this.queryParams.byCategory;
