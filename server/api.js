@@ -61,7 +61,6 @@ if (Meteor.isServer) {
   });
   Api.addRoute('categories', {}, {
     get: function () {
-      console.log(this.queryParams);
       var selector = {};
       if(this.queryParams.type) {
         selector.type = this.queryParams.type;
@@ -85,7 +84,6 @@ if (Meteor.isServer) {
 
   Api.addRoute('transactions', {}, {
     get: function() {
-      console.log(this.queryParams);
       var selector = {};
       if(this.queryParams.type && type!=="all") {
         selector.type = this.queryParams.type;
