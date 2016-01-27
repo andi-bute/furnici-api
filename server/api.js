@@ -92,7 +92,7 @@ if (Meteor.isServer) {
       }
       if(this.queryParams.lastMonths) {
           var compareDate = moment();
-          compareDate.dates(1);
+          compareDate.date(1);
           compareDate.hour(0);
           compareDate.minute(0);
           compareDate.second(0);
@@ -193,6 +193,7 @@ if (Meteor.isServer) {
         };
       }
       Recurring.remove({_id: this.urlParams.id});
+      delete FurniciCronJobs[this.urlParams.id];
       return {
         statusCode: 200,
         body: {status: 'success', message: 'Recurring removed'}
@@ -213,7 +214,10 @@ if (Meteor.isServer) {
         };
       }
       Recurring.update({_id: this.urlParams.id}, {$set: this.bodyParams});
-      return Recurring.findOne(this.urlParams.id);
+      var recurring =  Recurring.findOne(this.urlParams.id);
+      delete FurniciCronJobs[recurring._id];
+      addRecurring(recurring);
+      return recurring;
     }
   });
   Api.addRoute('recurring', {}, {
@@ -234,7 +238,9 @@ if (Meteor.isServer) {
     },
     put: function() {
       var id = Recurring.insert(this.bodyParams);
-      return Recurring.findOne(id);
+      var recurring = Recurring.findOne(id);
+      addRecurring(recurring);
+      return recurring;
     }
   });
 }
