@@ -43,6 +43,22 @@ if (Meteor.isServer) {
     }
   });
   Api.addRoute('categories/:id',{},{
+    get: function() {
+      if(!this.urlParams.id) {
+        return {
+          statusCode: 404,
+          body: {status: 'fail', message: 'Category id not set'}
+        };
+      }
+      var category = Categories.findOne(this.urlParams.id);
+      if(!category) {
+        return {
+          statusCode: 404,
+          body: {status: 'fail', message: 'Category not found'}
+        };
+      }
+      return category;
+    },
     delete: function() {
       if(!this.urlParams.id) {
         return {
