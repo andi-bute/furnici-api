@@ -3,10 +3,25 @@ if (Meteor.isServer) {
   // Global API configuration
   var Api = new Restivus({
     useDefaultAuth: true,
-    prettyJson: true
+    prettyJson: true,
+    defaultHeaders: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      'Content-Type': 'application/json'
+    },
+    defaultOptionsEndpoint: function() {
+      this.response.writeHead(201, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      });
+      return;
+    },
+    enableCors: true
   });
 
-  //Api.addRoute('budget', {authRequired: true}, {
   Api.addRoute('budget', {}, {
     get: function () {
       var budget = Budgets.findOne();
@@ -18,6 +33,13 @@ if (Meteor.isServer) {
     patch: function() {
       Budgets.update({}, {$set: this.bodyParams});
       return Budgets.findOne();
+    },
+    options:function() {
+      return {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'X-Auth-Token, X-User-Id'
+      }
     }
   });
   Api.addRoute('categories/:id',{},{
@@ -25,7 +47,7 @@ if (Meteor.isServer) {
       if(!this.urlParams.id) {
         return {
           statusCode: 404,
-          body: {status: 'fail', message: 'Category not set'}
+          body: {status: 'fail', message: 'Category id not set'}
         };
       }
       var category = Categories.findOne(this.urlParams.id);
@@ -45,7 +67,7 @@ if (Meteor.isServer) {
       if(!this.urlParams.id) {
         return {
           statusCode: 404,
-          body: {status: 'fail', message: 'Category id missing'}
+          body: {status: 'fail', message: 'Category id not set'}
         };
       }
       var category = Categories.findOne(this.urlParams.id);
@@ -57,6 +79,13 @@ if (Meteor.isServer) {
       }
       Categories.update({_id: this.urlParams.id}, {$set: this.bodyParams});
       return Categories.findOne(this.urlParams.id);
+    },
+    options:function() {
+      return {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'X-Auth-Token, X-User-Id'
+      }
     }
   });
   Api.addRoute('categories', {}, {
@@ -79,6 +108,13 @@ if (Meteor.isServer) {
     put: function() {
       var id = Categories.insert(this.bodyParams);
       return Categories.findOne(id);
+    },
+    options:function() {
+      return {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'X-Auth-Token, X-User-Id'
+      }
     }
   });
 
@@ -116,6 +152,13 @@ if (Meteor.isServer) {
     put: function() {
       var id = Transactions.insert(this.bodyParams);
       return Transactions.findOne(id);
+    },
+    options:function() {
+      return {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'X-Auth-Token, X-User-Id'
+      }
     }
   });
   Api.addRoute('transactions/:id', {}, {
@@ -123,7 +166,7 @@ if (Meteor.isServer) {
       if(!this.urlParams.id) {
         return {
           statusCode: 404,
-          body: {status: 'fail', message: 'Category not set'}
+          body: {status: 'fail', message: 'Transaction id not set'}
         };
       }
       var transaction = Transactions.findOne(this.urlParams.id);
@@ -139,7 +182,7 @@ if (Meteor.isServer) {
       if(!this.urlParams.id) {
         return {
           statusCode: 404,
-          body: {status: 'fail', message: 'Category not set'}
+          body: {status: 'fail', message: 'Transaction id not set'}
         };
       }
       var transaction = Transactions.findOne(this.urlParams.id);
@@ -156,7 +199,7 @@ if (Meteor.isServer) {
       if(!this.urlParams.id) {
         return {
           statusCode: 404,
-          body: {status: 'fail', message: 'Category not set'}
+          body: {status: 'fail', message: 'Transaction id not set'}
         };
       }
       var transaction = Transactions.findOne(this.urlParams.id);
@@ -171,11 +214,34 @@ if (Meteor.isServer) {
         statusCode: 200,
         body: {status: 'success', message: 'Transaction removed'}
       };
+    },
+    options:function() {
+      return {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'X-Auth-Token, X-User-Id'
+      }
     }
   });
 
 
   Api.addRoute('recurring/:id',{},{
+    get: function() {
+      if(!this.urlParams.id) {
+        return {
+          statusCode: 404,
+          body: {status: 'fail', message: 'Recurring id not set'}
+        };
+      }
+      var recurring = Recurring.findOne(this.urlParams.id);
+      if(!recurring) {
+        return {
+          statusCode: 404,
+          body: {status: 'fail', message: 'Recurring not found'}
+        };
+      }
+      return recurring;
+    },
     delete: function() {
       if(!this.urlParams.id) {
         return {
@@ -201,10 +267,10 @@ if (Meteor.isServer) {
       if(!this.urlParams.id) {
         return {
           statusCode: 404,
-          body: {status: 'fail', message: 'Recurring id missing'}
+          body: {status: 'fail', message: 'Recurring id not set'}
         };
       }
-      var recurring = Categories.findOne(this.urlParams.id);
+      var recurring = Recurring.findOne(this.urlParams.id);
       if(!recurring) {
         return {
           statusCode: 404,
@@ -216,6 +282,13 @@ if (Meteor.isServer) {
       delete FurniciCronJobs[recurring._id];
       addRecurring(recurring);
       return recurring;
+    },
+    options:function() {
+      return {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'X-Auth-Token, X-User-Id'
+      }
     }
   });
   Api.addRoute('recurring', {}, {
@@ -239,6 +312,13 @@ if (Meteor.isServer) {
       var recurring = Recurring.findOne(id);
       addRecurring(recurring);
       return recurring;
+    },
+    options:function() {
+      return {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'X-Auth-Token, X-User-Id'
+      }
     }
   });
 }
